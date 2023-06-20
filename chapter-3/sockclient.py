@@ -2,23 +2,46 @@ import socket
 
 def session_handler():
     print(f'[+] Connecting to {host_ip}.')
-
     sock.connect((host_ip, host_port))
     print(f'[+] Connected to {host_ip}.')
 
-    # receive, decode, print message
-    message = sock.recv(1024).decode()
-    print(message)
+    while True:
+        try:
+            print('[+] Listening for response...')
+            # receive, decode, print message
+            message = sock.recv(1024).decode()
 
-    # send message
-    response = input('Message to send#> ')
-    sock.send(response.encode())
+            if message == 'exit':
+                print ('[-] Server terminated session.')
+                sock.close()
+                break
 
-    sock.close()
+            print(message)
 
+            # send message
+            response = input('Message to send#> ')
+            if response == 'exit':
+                sock.send(response.encode())
+                sock.close()
+                break
+
+            sock.send(response.encode())
+        
+        # Custom error/exit messages
+        except KeyboardInterrupt:
+            print("[~] Keyboard interrupt received.")
+            sock.close()
+            break
+
+        except Exception:
+            print("[~] Generic error message.")
+            sock.close()
+            break
+
+# instantiate websocket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 host_ip = '127.0.0.1'
-host_port = 2222
+host_port = 2229
 
 session_handler()
